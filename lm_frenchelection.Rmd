@@ -83,9 +83,9 @@ The p-values related to the categorical variable are difficult to interpret. We 
 anova(myfit)
 ```
 
-## Choosing the most important variables to explain voting patterns
+## Choosing the most important variables using AIC 
 
-```{r,include=FALSE}
+```{r,results=FALSE}
 fitall<-lm(Score_LePen ~ .,data=data)
 summary(fitall)
 
@@ -97,6 +97,16 @@ summary(reduced)$call
 ```
 
 The result is a bit disappointing because the preferred model is a model with many variables. 
+
+## Choosing the most important variables using lasso (*glmnet*)
+
+```{r}
+x<-as.matrix(data[,-1])
+y<-data[,1]
+myfit<-glmnet::glmnet(x=x,y=y)
+cvfit = glmnet::cv.glmnet(x, y)
+coef(cvfit, s = "lambda.min")
+```
 
 ## Cross validation to evaluate model predictive accuracy using *caret*
 

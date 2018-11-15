@@ -241,8 +241,12 @@ summary(myfit)</code></pre>
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
-<div id="choosing-the-most-important-variables-to-explain-voting-patterns" class="section level2">
-<h2>Choosing the most important variables to explain voting patterns</h2>
+<div id="choosing-the-most-important-variables-using-aic" class="section level2">
+<h2>Choosing the most important variables using AIC</h2>
+<pre class="r"><code>fitall&lt;-lm(Score_LePen ~ .,data=data)
+summary(fitall)
+
+reduced&lt;-stepAIC(fitall)</code></pre>
 <pre class="r"><code>summary(reduced)$call</code></pre>
 <pre><code>## lm(formula = Score_LePen ~ Prop.Pharmacies.et.parfumerie + Dynamique.Entrepreneuriale.Service.et.Commerce + 
 ##     Indice.Fiscal.Partiel + Indice.Evasion.Client + Prop.Omnipraticiens.BV + 
@@ -266,6 +270,101 @@ summary(myfit)</code></pre>
 ##     Prop.de.Services.aux.particuliers + Prop.institution.de.Education..sant....action.sociale..administration + 
 ##     PIB.R..gionnal + Score.Croissance.Entrepreneuriale, data = data)</code></pre>
 <p>The result is a bit disappointing because the preferred model is a model with many variables.</p>
+</div>
+<div id="choosing-the-most-important-variables-using-lasso-glmnet" class="section level2">
+<h2>Choosing the most important variables using lasso (<em>glmnet</em>)</h2>
+<pre class="r"><code>x&lt;-as.matrix(data[,-1])
+y&lt;-data[,1]
+myfit&lt;-glmnet::glmnet(x=x,y=y)
+cvfit = glmnet::cv.glmnet(x, y)
+coef(cvfit, s = &quot;lambda.min&quot;)</code></pre>
+<pre><code>## 85 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                                                                                1
+## (Intercept)                                                            -34.61242
+## Prop.Pharmacies.et.parfumerie                                            .      
+## Dynamique.Entrepreneuriale                                               .      
+## Dynamique.Entrepreneuriale.Service.et.Commerce                           .      
+## Synergie.M..dicale.COMMUNE                                               .      
+## Indice.Fiscal.Partiel                                                    .      
+## Score.Fiscal                                                             .      
+## Indice.Evasion.Client                                                    .      
+## Score.Evasion.Client                                                     .      
+## Indice.Synergie.M..dicale                                                .      
+## Score.Synergie.M..dicale                                                 .      
+## Prop.Omnipraticiens.BV                                                   .      
+## Prop.Infirmiers.Lib..raux.BV                                             .      
+## Prop.dentistes.Lib..raux.BV                                              .      
+## Prop.pharmaciens.Lib..raux.BV                                            .      
+## Densit...M..dicale.BV                                                    .      
+## Score...quipement.de.sant...BV                                           .      
+## Indice.D..mographique                                                    .      
+## Score.D..mographique                                                     .      
+## Indice.M..nages                                                          .      
+## Score.M..nages                                                           .      
+## Population                                                               .      
+## Evolution.Population                                                     .      
+## Evolution.Pop..                                                          .      
+## Prop.M..nages                                                            .      
+## Prop.R..sidences.Principales                                             .      
+## Prop.propri..taire                                                       .      
+## Prop.Logement                                                            .      
+## Prop.R..sidences.Secondaires                                             .      
+## Prop.Log.Vacants                                                         .      
+## Prop.Occupants.R..sidence.Principale                                    76.76565
+## Prop.Femme                                                               .      
+## Prop.Homme                                                               .      
+## Prop.Mineurs                                                             .      
+## Prop.Majeurs                                                             .      
+## Prop.Etudiants                                                           .      
+## Prop.Entreprises.Secteur.Services                                        .      
+## Prop.Entreprises.Secteur.Commerce                                        .      
+## Prop.Entreprises.Secteur.Construction                                    .      
+## Prop.Entreprises.Secteur.Industrie                                       .      
+## Prop.Cr..ation.Enteprises                                                .      
+## Prop.Cr..ation.Industrielles                                             .      
+## Prop.Cr..ation.Construction                                              .      
+## Prop.Cr..ation.Commerces                                                 .      
+## Prop.Cr..ation.Services                                                  .      
+## Moyenne.Revenus.Fiscaux.D..partementaux                                  .      
+## Moyenne.Revenus.Fiscaux.R..gionaux                                       .      
+## Dep.Moyenne.Salaires.Horaires                                            .      
+## Dep.Moyenne.Salaires.Cadre.Horaires                                      .      
+## Dep.Moyenne.Salaires.Prof.Interm..diaire.Horaires                        .      
+## Dep.Moyenne.Salaires.Employ...Horaires                                   .      
+## Dep.Moyenne.Salaires.Ouvri...Horaires                                    .      
+## Reg.Moyenne.Salaires.Horaires                                            .      
+## Reg.Moyenne.Salaires.Cadre.Horaires                                      .      
+## Reg.Moyenne.Salaires.Prof.Interm..diaire.Horaires                        .      
+## Reg.Moyenne.Salaires.Employ...Horaires                                   .      
+## Reg.Moyenne.Salaires.Ouvri...Horaires                                    .      
+## Valeur.ajout..e.r..gionale                                               .      
+## Score.Urbanit..                                                          .      
+## Prop.Atifs                                                               .      
+## Prop.Actifs.Salari..s                                                    .      
+## Prop.Actifs.Non.Salari..s                                                .      
+## Prop.Logement.Secondaire.et.Occasionnel                                  .      
+## Prop.Hotel                                                               .      
+## Capacit...Hotel                                                          .      
+## Prop.Camping                                                             .      
+## Capacit...Camping                                                        .      
+## Taux...tudiants                                                          .      
+## Taux.Propri..t..                                                         .      
+## Dynamique.D..mographique.INSEE                                           .      
+## Capacit...Fisc                                                           .      
+## Moyenne.Revnus.fiscaux                                                   .      
+## Taux.Evasion.Client                                                      .      
+## Prop.Education..sant....action.sociale                                   .      
+## Prop.Services.personnels.et.domestiques                                  .      
+## Prop.Sante.action.sociale                                             -414.86613
+## Prop.Industries.des.biens.interm..diaires                                .      
+## Prop.de.Commerce                                                         .      
+## Prop.de.Services.aux.particuliers                                        .      
+## Prop.institution.de.Education..sant....action.sociale..administration    .      
+## PIB.R..gionnal                                                           .      
+## Score.Croissance.Population                                              .      
+## Score.Croissance.Entrepreneuriale                                        .      
+## Score.VA.R..gion                                                         .      
+## Score.PIB                                                                .</code></pre>
 </div>
 <div id="cross-validation-to-evaluate-model-predictive-accuracy-using-caret" class="section level2">
 <h2>Cross validation to evaluate model predictive accuracy using <em>caret</em></h2>
