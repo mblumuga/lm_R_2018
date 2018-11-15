@@ -98,9 +98,9 @@ summary(reduced)$call
 
 The result is a bit disappointing because the preferred model is a model with many variables. 
 
-## Cross validation to evaluate model predictive accuracy 
+## Cross validation to evaluate model predictive accuracy using *caret*
 
-```{r,include=FALSE}
+```{r,warning=FALSE}
 # load the library
 # define training control
 train_control <- caret::trainControl(method="LOOCV")
@@ -117,9 +117,8 @@ plot(model$pred$obs,model$pred$pred,xlab="Observations",ylab="Predictions")
 
 Some data are poorly predicted and it includes department in Paris and around. We remove them and evaluate predictive accuracy again.
 
-```{r,include=FALSE}
-# load the library
-# define training control
+```{r,warning=FALSE}
+# suppress some depts
 datanew<-data[!dept%in%c("75","91","92","93","94","95"),]
 deptnew<-dept[!dept%in%c("75","91","92","93","94","95")]
 train_control <- caret::trainControl(method="LOOCV")
@@ -129,6 +128,7 @@ model <- caret::train(Score_LePen~., data=datanew, trControl=train_control, meth
 ```
 
 ```{r}
+# summarize results
 print(model)
 #Plot predictions as a function of observations
 plot(model$pred$obs,model$pred$pred,xlab="Observations",ylab="Predictions")
