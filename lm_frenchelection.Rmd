@@ -1,0 +1,145 @@
+---
+title: "Linear model in R"
+output: html_document
+author: "Michael Blum"
+date: "15/11/2018"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We will show how to work with linear models in R. 
+
+# Linear regression with *lm*
+
+Here, we will consider the result of the 2nd round of the French presidential 2017 election. The variables include socio-economic variables and the score of the 2nd round of the French presidential election. If you want to read more about the dataset, you can have a look to [my paper](https://towardsdatascience.com/machine-learning-approaches-detect-outlier-values-that-do-not-follow-a-common-trend-detecting-cc0252f637bd) in Medium. 
+
+<img src="https://cdn-images-1.medium.com/max/1600/1*XJWGTs_AGxv8Y_zAAWKOPg.jpeg" width = "500">
+
+```{r,,include=FALSE}
+require(MASS)
+require(tidyverse)
+require(ggplot2)
+require(ggrepel)
+```
+
+## Find the most correlated variables
+```{r}
+  data <- read.csv(file="data/presidential2017_dept.csv")[,-1]
+  thecor <- cor((data[,]))
+  sort(thecor[1,]^2,decreasing=T)[1:10]
+```
+
+Would you think, we will obtain the same most correlated variables if regressing the score of Emmanuel Macron instead of Marine Le Pen?
+
+Vote online!
+
+https://fr.surveymonkey.com/r/RBNVHWT
+
+##Relationship between vote for Marine Le Pen and proportion of health/social workers
+Let us plot the relationship between the 2 variables.
+
+```{r}
+plot(data$Prop.Sant,data[,"Score_LePen"],pch=19,xlab="Proportion of social workers",ylab="Score of Le Pen")
+```
+
+##Simple linear regression
+
+```{r}
+myfit<-lm(Score_LePen ~ Prop.Sante.action.sociale, data=data)
+summary(myfit)
+```
+
+The third column is the **t value** that is the ratio between the first column (regression coefficient) and the second one (standard deviation of the regression coefficient). The last column is the P value, which is the probability, under the null hypothesis, to have a t value larger in absolute value than the observed one.  
+
+What do you expect for P-values under the null?
+
+Vote online!
+
+https://fr.surveymonkey.com/r/R69FS3T
+
+
+```{r}
+plot(data[,"Prop.Sante.action.sociale"],data[,"Score_LePen"],pch=19,xlab="Proportion of social workers",ylab="Score of Le Pen")
+abline(myfit,lwd=3,col=2)
+```
+
+## Adding a categorical variable in a linear model
+```{r}
+#Department
+dept <- (read.csv(file="data/presidential2017_dept.csv")[,1])
+
+#Make a new relevant categorical variablde
+categ <- as.factor(as.numeric(dept)%%3)
+
+myfit<-lm(Score_LePen ~ Prop.Sante.action.sociale  + categ, data=data)
+summary(myfit)
+```
+
+The p-values related to the categorical variable are difficult to interpret. We should use anlaysis of variance instead
+
+```{r}
+anova(myfit)
+```
+
+## Choosing the most important variables to explain voting patterns
+
+```{r,include=FALSE}
+fitall<-lm(Score_LePen ~ .,data=data)
+summary(fitall)
+
+reduced<-stepAIC(fitall)
+```
+
+```{r}
+summary(reduced)$call
+```
+
+The result is a bit disappointing because the preferred model is a model with many variables. 
+
+## Cross validation to evaluate model predictive accuracy 
+
+```{r,include=FALSE}
+# load the library
+# define training control
+train_control <- caret::trainControl(method="LOOCV")
+# train the model
+model <- caret::train(Score_LePen~., data=data, trControl=train_control, method="lm")
+```
+
+```{r}
+# summarize results
+print(model)
+#Plot predictions as a function of observations
+plot(model$pred$obs,model$pred$pred,xlab="Observations",ylab="Predictions")
+```
+
+Some data are poorly predicted and it includes department in Paris and around. We remove them and evaluate predictive accuracy again.
+
+```{r,include=FALSE}
+# load the library
+# define training control
+datanew<-data[!dept%in%c("75","91","92","93","94","95"),]
+deptnew<-dept[!dept%in%c("75","91","92","93","94","95")]
+train_control <- caret::trainControl(method="LOOCV")
+# train the model
+model <- caret::train(Score_LePen~., data=datanew, trControl=train_control, method="lm")
+# summarize results
+```
+
+```{r}
+print(model)
+#Plot predictions as a function of observations
+plot(model$pred$obs,model$pred$pred,xlab="Observations",ylab="Predictions")
+```
+
+Now predictions with socio economic variables works better with a R^2 of 0.42.
+
+# Logistic regression with *glm*
+
+Assume we know only if the score is larger than $40\%$or not. Based on this binary data, find the most related variables, propose a reduced model, and evaluate classification accuracy.
+
+```{r}
+data[,1] <- as.factor(data[,1]>=40)
+```
